@@ -90,8 +90,7 @@
                 "tag": "geosite-geolocation-non-cn",
                 "type": "remote",
                 "format": "binary",
-                "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-geolocation-!cn.srs",
-                "download_detour": "DIRECT"
+                "url": "https://cdn.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-geolocation-!cn.srs"
             }
         ],
         "auto_detect_interface": true,

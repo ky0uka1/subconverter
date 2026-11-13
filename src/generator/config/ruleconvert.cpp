@@ -475,6 +475,8 @@ static std::string singBoxRuleSetTag(const std::string &type, const std::string 
     return type + "-" + value;
 }
 
+constexpr std::string_view SingBoxRuleSetBaseUrl = "https://cdn.jsdelivr.net/gh/SagerNet/sing-";
+
 static void addSingBoxRuleTarget(rapidjson::Value &rule, const std::string &group, const std::set<std::string> &reject_groups, rapidjson::MemoryPoolAllocator<> &allocator)
 {
     if (group == "REJECT" || reject_groups.contains(group))
@@ -504,9 +506,8 @@ static void ensureSingBoxRuleSet(rapidjson::Document &base_rule, const std::stri
     rule_set.AddMember("tag", rapidjson::Value(tag.c_str(), allocator), allocator);
     rule_set.AddMember("type", "remote", allocator);
     rule_set.AddMember("format", "binary", allocator);
-    const std::string url = "https://raw.githubusercontent.com/SagerNet/sing-" + type + "/rule-set/" + tag + ".srs";
+    const std::string url = std::string(SingBoxRuleSetBaseUrl) + type + "@rule-set/" + tag + ".srs";
     rule_set.AddMember("url", rapidjson::Value(url.c_str(), allocator), allocator);
-    rule_set.AddMember("download_detour", "DIRECT", allocator);
     route["rule_set"].PushBack(rule_set, allocator);
 }
 
