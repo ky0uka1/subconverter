@@ -7,6 +7,30 @@ Utility to convert between various proxy subscription formats.
 [![GitHub release](https://img.shields.io/github/release/metacubex/subconverter.svg)](https://github.com/metacubex/subconverter/releases)
 [![GitHub license](https://img.shields.io/github/license/metacubex/subconverter.svg)](https://github.com/metacubex/subconverter/blob/master/LICENSE)
 
+## About this fork
+
+This fork keeps the upstream subscription converter while maintaining the changes required by Solaria:
+
+- sing-box output targets sing-box 1.12 and newer.
+- The only published container image is `ghcr.io/ky0uka1/subconverter`; binary release drafts are not produced.
+- Release tags follow `vX.Y.Z-ky.N` (for example, `v0.9.2-ky.1`). The Docker workflow also publishes `latest` from `master`.
+
+Before releasing a change to a generated format, run the compatibility suite:
+
+```bash
+bash tests/singbox/check.sh
+```
+
+The check requires an x86_64 host with Docker, `curl`, `tar`, and `python3`. It builds the local image and verifies the generated outputs with mihomo and the supported sing-box versions.
+
+To sync with upstream, merge it explicitly and rerun the check:
+
+```bash
+git fetch upstream
+git merge upstream/master
+bash tests/singbox/check.sh
+```
+
 [Docker README](https://github.com/metacubex/subconverter/blob/master/README-docker.md)
 
 [中文文档](https://github.com/metacubex/subconverter/blob/master/README-cn.md)

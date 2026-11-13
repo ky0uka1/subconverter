@@ -7,6 +7,30 @@
 [![GitHub release](https://img.shields.io/github/release/metacubex/subconverter.svg)](https://github.com/metacubex/subconverter/releases)
 [![GitHub license](https://img.shields.io/github/license/metacubex/subconverter.svg)](https://github.com/metacubex/subconverter/blob/master/LICENSE)
 
+## 关于这个 fork
+
+本 fork 保留上游的订阅转换能力，并维护 Solaria 需要的差异：
+
+- sing-box 输出面向 sing-box 1.12 及更高版本。
+- 只发布 `ghcr.io/ky0uka1/subconverter` 容器镜像，不再生成二进制 release 草稿。
+- release tag 使用 `vX.Y.Z-ky.N`，例如 `v0.9.2-ky.1`；Docker workflow 还会从 `master` 发布 `latest`。
+
+发布任何生成格式的改动前，先运行兼容性检查：
+
+```bash
+bash tests/singbox/check.sh
+```
+
+该检查需要 x86_64 主机、Docker、`curl`、`tar` 和 `python3`。脚本会构建本地镜像，并用 mihomo 与受支持的 sing-box 版本检查生成结果。
+
+同步上游时必须显式合并，然后重跑检查：
+
+```bash
+git fetch upstream
+git merge upstream/master
+bash tests/singbox/check.sh
+```
+
 * * *
 
 ## 新增内容
