@@ -2,7 +2,7 @@
 
 Utility to convert between various proxy subscription formats.
 
-[![Build Status](https://github.com/metacubex/subconverter/actions/workflows/build.yml/badge.svg)](https://github.com/metacubex/subconverter/actions)
+[![Publish Container Image](https://github.com/ky0uka1/subconverter/actions/workflows/docker.yml/badge.svg)](https://github.com/ky0uka1/subconverter/actions/workflows/docker.yml)
 [![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/metacubex/subconverter.svg)](https://github.com/metacubex/subconverter/tags)
 [![GitHub release](https://img.shields.io/github/release/metacubex/subconverter.svg)](https://github.com/metacubex/subconverter/releases)
 [![GitHub license](https://img.shields.io/github/license/metacubex/subconverter.svg)](https://github.com/metacubex/subconverter/blob/master/LICENSE)
