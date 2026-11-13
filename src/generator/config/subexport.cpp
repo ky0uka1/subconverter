@@ -3,6 +3,7 @@
 #include <numeric>
 #include <cmath>
 #include <climits>
+#include <set>
 
 #include "config/regmatch.h"
 #include "generator/config/subexport.h"
@@ -2515,6 +2516,26 @@ static rapidjson::Value stringArrayToJsonArray(const std::string &array, const s
     return result;
 }
 
+static std::set<std::string> collectSingBoxRejectGroups(const ProxyGroupConfigs &groups)
+{
+    std::set<std::string> reject_groups;
+    for (const ProxyGroupConfig &group : groups)
+    {
+        for (const std::string &rule : group.Proxies)
+        {
+            std::string target = trim(rule);
+            if (startsWith(target, "[]"))
+                target = target.substr(2);
+            if (target == "REJECT")
+            {
+                reject_groups.emplace(group.Name);
+                break;
+            }
+        }
+    }
+    return reject_groups;
+}
+
 void proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::vector<RulesetContent> &ruleset_content_array, const ProxyGroupConfigs &extra_proxy_group, extra_settings &ext) {
     using namespace rapidjson_ext;
     rapidjson::Document::AllocatorType &allocator = json.GetAllocator();
@@ -2526,10 +2547,6 @@ void proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::v
     {
         auto direct = buildObject(allocator, "type", "direct", "tag", "DIRECT");
         outbounds.PushBack(direct, allocator);
-        auto reject = buildObject(allocator, "type", "block", "tag", "REJECT");
-        outbounds.PushBack(reject, allocator);
-        auto dns = buildObject(allocator, "type", "dns", "tag", "dns-out");
-        outbounds.PushBack(dns, allocator);
     }
 
     for (Proxy &x : nodes)
@@ -2864,8 +2881,11 @@ void proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::v
         return;
     }
 
+    const std::set<std::string> reject_groups = collectSingBoxRejectGroups(extra_proxy_group);
     for (const ProxyGroupConfig &x: extra_proxy_group)
     {
+        if (reject_groups.contains(x.Name))
+            continue;
         string_array filtered_nodelist;
         std::string type;
         switch (x.Type)
@@ -2899,8 +2919,12 @@ void proxyToSingBox(std::vector<Proxy> &nodes, rapidjson::Document &json, std::v
         rapidjson::Value group_outbounds(rapidjson::kArrayType);
         for (const std::string& y: filtered_nodelist)
         {
+            if (y == "REJECT" || reject_groups.contains(y))
+                continue;
             group_outbounds.PushBack(rapidjson::Value(y.c_str(), allocator), allocator);
         }
+        if (group_outbounds.Empty())
+            group_outbounds.PushBack("DIRECT", allocator);
         group.AddMember("outbounds", group_outbounds, allocator);
 
         if (x.Type == ProxyGroupType::URLTest)
@@ -2955,7 +2979,7 @@ std::string proxyToSingBox(std::vector<Proxy> &nodes, const std::string &base_co
     if(ext.nodelist || !ext.enable_rule_generator)
         return json | SerializeObject();
 
-    rulesetToSingBox(json, ruleset_content_array, ext.overwrite_original_rules);
+    rulesetToSingBox(json, ruleset_content_array, ext.overwrite_original_rules, collectSingBoxRejectGroups(extra_proxy_group));
 
     return json | SerializeObject();
 }
