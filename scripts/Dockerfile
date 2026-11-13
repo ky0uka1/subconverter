@@ -2,6 +2,7 @@ FROM alpine:3.16 AS builder
 LABEL maintainer="metacubex.official@gmail.com"
 ARG THREADS="4"
 ARG SHA=""
+ARG UPDATE_RULES="true"
 
 # build minimized
 WORKDIR /
@@ -34,15 +35,23 @@ RUN set -xe && \
     cd toml11 && \
     cmake -DCMAKE_CXX_STANDARD=11 . && \
     make install -j $THREADS && \
-    cd .. && \
-    git clone https://github.com/metacubex/subconverter --depth=1 && \
-    cd subconverter && \
-    [ -n "$SHA" ] && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h;\
-    python3 -m ensurepip && \
-    python3 -m pip install gitpython && \
-    python3 scripts/update_rules.py -c scripts/rules_config.conf && \
-    cmake -DCMAKE_BUILD_TYPE=Release . && \
-    make -j $THREADS
+    cd /
+
+WORKDIR /source
+COPY . /source
+
+RUN set -xe && \
+    [ -n "$SHA" ] && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h || true
+
+RUN set -xe && \
+    if [ "$UPDATE_RULES" = "true" ]; then \
+        python3 -m ensurepip && \
+        python3 -m pip install gitpython && \
+        python3 scripts/update_rules.py -c scripts/rules_config.conf; \
+    fi
+
+RUN cmake -DCMAKE_BUILD_TYPE=Release . && \
+    make -j "$THREADS"
 
 # build final image
 FROM alpine:3.16
@@ -50,8 +59,8 @@ LABEL maintainer="metacubex.official@gmail.com"
 
 RUN apk add --no-cache --virtual subconverter-deps pcre2 libcurl yaml-cpp
 
-COPY --from=builder /subconverter/subconverter /usr/bin/
-COPY --from=builder /subconverter/base /base/
+COPY --from=builder /source/subconverter /usr/bin/
+COPY --from=builder /source/base /base/
 
 ENV TZ=Africa/Abidjan
 RUN ln -sf /usr/share/zoneinfo/$TZ /etc/localtime
